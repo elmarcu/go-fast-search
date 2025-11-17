@@ -1,0 +1,62 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      xpack.security.enabled: "false"
+    ports:
+      - "9200:9200"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/mysql-connector-java.jar:/usr/share/logstash/logstash-core/lib/jars/mysql-connector-java.jar
+    depends_on:
+      - mysql
+      - elasticsearch
+
+  go-service:
+    build:
+      context: ./go-service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./go-service:/app      # Mount code for live reload
+      - /app/tmp               # Temp folder for binary
+    ports:
+      - "8080:8080"
+    depends_on:
+      - elasticsearch
+      - mysql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "9091:8080"
+    depends_on:
+      - mysql
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      xpack.security.enabled: "false"
+      xpack.encryptedSavedObjects.encryptionKey: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      xpack.security.encryptionKey: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      xpack.reporting.encryptionKey: "cccccccccccccccccccccccccccccccc"
+    ports:
+      - "9092:5601"
+    depends_on:
+      - elasticsearch

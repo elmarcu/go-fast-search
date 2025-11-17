@@ -1,0 +1,26 @@
+# Binaries
+/app
+*.exe
+*.out
+
+# Go build
+bin/
+build/
+dist/
+
+# Temp files
+*.log
+*.tmp
+
+# Dependencies
+vendor/
+
+# Air temp
+.air/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

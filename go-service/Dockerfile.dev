@@ -1,0 +1,17 @@
+FROM golang:1.25-alpine
+
+RUN apk add --no-cache git bash
+
+# Install Air with new module path
+RUN go install github.com/air-verse/air@latest
+
+ENV PATH="/go/bin:${PATH}"
+
+WORKDIR /app
+
+COPY go.mod ./
+RUN go mod download
+
+COPY . .
+
+CMD ["air"]
