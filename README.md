@@ -1,3 +1,5 @@
+# WORK IN PROGRESS - LOCAL DEV ENV
+
 # Go User Activity Logging (Local Dev + ELK Stack)
 
 A lightweight Go service for collecting and storing **user activity logs** using:
